@@ -22,9 +22,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run stage 2 MiniRocket model for NGAFID maintenance binary detection.")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT, help="Directory for raw benchmark data.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGE2_OUTPUT, help="Directory for stage 2 outputs.")
-    parser.add_argument("--max-length", type=int, default=1024, help="Maximum number of timesteps kept for each flight.")
+    parser.add_argument("--max-length", type=int, default=4096, help="Maximum number of timesteps kept for each flight.")
     parser.add_argument("--num-kernels", type=int, default=10000, help="Number of MiniRocket kernels.")
-    parser.add_argument("--n-jobs", type=int, default=1, help="Number of CPU jobs used by MiniRocket.")
+    parser.add_argument("--n-jobs", type=int, default=4, help="Number of CPU jobs used by MiniRocket.")
     parser.add_argument(
         "--folds",
         type=int,

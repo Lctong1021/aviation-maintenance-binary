@@ -18,6 +18,11 @@ artifacts/
 !artifacts/stage1/summary.json
 !artifacts/stage1/predictions.csv
 !artifacts/stage1/stage1_report.md
+!artifacts/stage2_1024/
+!artifacts/stage2_1024/fold_metrics.csv
+!artifacts/stage2_1024/summary.json
+!artifacts/stage2_1024/predictions.csv
+!artifacts/stage2_1024/stage2_report.md
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
