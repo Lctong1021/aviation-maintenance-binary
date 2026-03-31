@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
+from tqdm.auto import tqdm
 
 
 def scale_flight(arr: np.ndarray, mins: np.ndarray, maxs: np.ndarray) -> np.ndarray:
@@ -59,12 +60,17 @@ def build_feature_table(
     flight_arrays: Dict[int, np.ndarray],
     mins: np.ndarray,
     maxs: np.ndarray,
+    desc: str | None = None,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     rows: List[Dict[str, float]] = []
     labels: List[int] = []
     indices: List[int] = []
 
-    for master_index, row in header_df.iterrows():
+    iterator = header_df.iterrows()
+    if desc:
+        iterator = tqdm(iterator, total=len(header_df), desc=desc, leave=False)
+
+    for master_index, row in iterator:
         arr = flight_arrays[int(master_index)]
         feature_row = extract_flight_features(arr, mins=mins, maxs=maxs)
         feature_row["master_index"] = int(master_index)

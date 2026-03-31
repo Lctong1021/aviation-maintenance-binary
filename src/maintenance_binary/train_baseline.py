@@ -44,24 +44,74 @@ def build_baseline_pipeline() -> Pipeline:
     )
 
 
+def write_stage1_report(output_dir: Path, metrics_df: pd.DataFrame, summary: Dict[str, Dict[str, float]]) -> None:
+    report_lines = [
+        "# Stage 1 Results",
+        "",
+        "## 5-Fold Metrics",
+        "",
+        metrics_df.to_markdown(index=False),
+        "",
+        "## Summary",
+        "",
+    ]
+
+    for metric_name in ["accuracy", "f1", "precision", "recall", "roc_auc"]:
+        metric_values = summary[metric_name]
+        report_lines.append(
+            f"- {metric_name}: {metric_values['mean']:.4f} ± {metric_values['std']:.4f}"
+        )
+
+    report_lines.append("")
+    (output_dir / "stage1_report.md").write_text("\n".join(report_lines), encoding="utf-8")
+
+
 def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    print(f"[Stage 1] Loading dataset from {data_root}", flush=True)
     bundle = load_benchmark_dataset(data_root)
+    print(
+        f"[Stage 1] Loaded {len(bundle.flight_header)} flights with {len(bundle.flight_arrays)} time-series records",
+        flush=True,
+    )
     fold_results: List[FoldResult] = []
     prediction_frames: List[pd.DataFrame] = []
 
     for fold in range(5):
+        print(f"\n[Fold {fold}] Preparing split", flush=True)
         train_df, test_df = get_fold_split(bundle.flight_header, fold)
-        X_train, y_train = build_feature_table(train_df, bundle.flight_arrays, bundle.mins, bundle.maxs)
-        X_test, y_test = build_feature_table(test_df, bundle.flight_arrays, bundle.mins, bundle.maxs)
+        print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
+        X_train, y_train = build_feature_table(
+            train_df,
+            bundle.flight_arrays,
+            bundle.mins,
+            bundle.maxs,
+            desc=f"Fold {fold} train features",
+        )
+        X_test, y_test = build_feature_table(
+            test_df,
+            bundle.flight_arrays,
+            bundle.mins,
+            bundle.maxs,
+            desc=f"Fold {fold} test features",
+        )
 
+        print(f"[Fold {fold}] Training logistic regression baseline", flush=True)
         pipeline = build_baseline_pipeline()
         pipeline.fit(X_train, y_train)
 
+        print(f"[Fold {fold}] Evaluating", flush=True)
         y_pred = pipeline.predict(X_test)
         y_prob = pipeline.predict_proba(X_test)[:, 1]
         metrics = compute_binary_metrics(y_test.to_numpy(), y_pred, y_prob)
+        print(
+            f"[Fold {fold}] "
+            f"accuracy={metrics['accuracy']:.4f}, "
+            f"f1={metrics['f1']:.4f}, "
+            f"roc_auc={metrics['roc_auc']:.4f}",
+            flush=True,
+        )
 
         fold_results.append(FoldResult(fold=fold, **metrics))
         prediction_frames.append(
@@ -85,9 +135,11 @@ def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
         for metric in ["accuracy", "f1", "precision", "recall", "roc_auc"]
     }
 
+    print(f"\n[Stage 1] Saving results to {output_dir}", flush=True)
     metrics_df.to_csv(output_dir / "fold_metrics.csv", index=False)
     pd.concat(prediction_frames, ignore_index=True).to_csv(output_dir / "predictions.csv", index=False)
     with open(output_dir / "summary.json", "w", encoding="utf-8") as fp:
         json.dump(summary, fp, indent=2, ensure_ascii=False)
+    write_stage1_report(output_dir, metrics_df, summary)
 
     return {"fold_metrics": metrics_df, "summary": summary}

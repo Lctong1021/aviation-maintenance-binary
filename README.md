@@ -53,6 +53,22 @@ python scripts/run_stage1.py --data-root data/raw --output-dir artifacts/stage1
 - `artifacts/stage1/fold_metrics.csv`
 - `artifacts/stage1/summary.json`
 - `artifacts/stage1/predictions.csv`
+- `artifacts/stage1/stage1_report.md`
+
+## Stage 1 Results
+
+当前 `Logistic Regression` baseline 的 5-fold 结果如下：
+
+- accuracy: `0.6775 ± 0.0098`
+- f1: `0.6758 ± 0.0108`
+- precision: `0.6653 ± 0.0195`
+- recall: `0.6870 ± 0.0136`
+- roc_auc: `0.7327 ± 0.0132`
+
+详细每折结果见：
+
+- `artifacts/stage1/fold_metrics.csv`
+- `artifacts/stage1/stage1_report.md`
 
 ## Dataset
 
