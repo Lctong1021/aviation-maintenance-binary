@@ -7,6 +7,7 @@
 - `2days` benchmark 子集加载
 - 统计特征 baseline
 - `Logistic Regression` 5-fold cross validation
+- `MiniRocket` 5-fold cross validation
 - 每折结果与均值、标准差输出
 
 ## Project Structure
@@ -70,6 +71,31 @@ python scripts/run_stage1.py --data-root data/raw --output-dir artifacts/stage1
 - `artifacts/stage1/fold_metrics.csv`
 - `artifacts/stage1/stage1_report.md`
 
+## Stage 2 Run
+
+```bash
+python scripts/run_stage2.py
+```
+
+常用参数：
+
+```bash
+python scripts/run_stage2.py --max-length 1024 --num-kernels 10000 --n-jobs 1
+```
+
+如果机器内存足够，也可以尝试更长的序列：
+
+```bash
+python scripts/run_stage2.py --max-length 4096 --num-kernels 10000 --n-jobs 1
+```
+
+运行结束后会生成：
+
+- `artifacts/stage2/fold_metrics.csv`
+- `artifacts/stage2/summary.json`
+- `artifacts/stage2/predictions.csv`
+- `artifacts/stage2/stage2_report.md`
+
 ## Dataset
 
 本项目默认下载官方仓库 `hyang0129/NGAFIDDATASET` 中 benchmark 用到的 `2days` 子集。  
@@ -103,7 +129,7 @@ data/raw/2days/
 
 ## Metrics
 
-第一阶段默认报告：
+当前默认报告：
 
 - Accuracy
 - F1

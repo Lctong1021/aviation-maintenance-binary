@@ -4,3 +4,5 @@ scikit-learn>=1.4
 gdown>=5.2
 compress-pickle>=2.1
 tqdm>=4.66
+sktime>=0.40
+numba>=0.61
