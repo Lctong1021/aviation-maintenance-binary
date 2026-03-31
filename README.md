@@ -25,9 +25,15 @@
 ## Environment
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+conda create -n ngbin python=3.11
+conda activate ngbin
 pip install -r requirements.txt
+```
+
+如果环境已经创建过，后续只需要：
+
+```bash
+conda activate ngbin
 ```
 
 ## Stage 1 Run
@@ -52,6 +58,17 @@ python scripts/run_stage1.py --data-root data/raw --output-dir artifacts/stage1
 
 本项目默认下载官方仓库 `hyang0129/NGAFIDDATASET` 中 benchmark 用到的 `2days` 子集。  
 下载链接来自官方实现中的 Google Drive 文件地址。
+
+如果项目根目录下已经有：
+
+```text
+./2days/
+├── flight_data.pkl
+├── flight_header.csv
+└── stats.csv
+```
+
+脚本会优先直接使用这份本地数据。
 
 如果 Google Drive 限流导致自动下载失败，可以手工下载后放到：
 

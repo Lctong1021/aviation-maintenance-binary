@@ -11,7 +11,7 @@ import pandas as pd
 from compress_pickle import load
 from gdown.exceptions import FileURLRetrievalError
 
-from maintenance_binary.constants import BENCHMARK_NAME, BENCHMARK_URL, MAX_CHANNELS
+from maintenance_binary.constants import BENCHMARK_NAME, BENCHMARK_URL, LOCAL_BENCHMARK_DIR, MAX_CHANNELS
 
 
 @dataclass
@@ -26,6 +26,12 @@ class BenchmarkDataBundle:
 def ensure_benchmark_downloaded(data_root: Path) -> Path:
     data_root = Path(data_root)
     data_root.mkdir(parents=True, exist_ok=True)
+
+    local_header = LOCAL_BENCHMARK_DIR / "flight_header.csv"
+    local_data = LOCAL_BENCHMARK_DIR / "flight_data.pkl"
+    local_stats = LOCAL_BENCHMARK_DIR / "stats.csv"
+    if local_header.exists() and local_data.exists() and local_stats.exists():
+        return LOCAL_BENCHMARK_DIR
 
     extract_dir = data_root / BENCHMARK_NAME
     header_path = extract_dir / "flight_header.csv"
