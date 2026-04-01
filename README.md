@@ -8,6 +8,7 @@
 - 统计特征 baseline
 - `Logistic Regression` 5-fold cross validation
 - `MiniRocket` 5-fold cross validation
+- `MiniRocket + statistical features` fusion
 - 每折结果与均值、标准差输出
 
 ## Project Structure
@@ -83,6 +84,14 @@ python scripts/run_stage2.py
 python scripts/run_stage2.py --max-length 1024 --num-kernels 10000 --n-jobs 1
 ```
 
+切换不同分类头时可以直接改参数：
+
+```bash
+python scripts/run_stage2.py --max-length 6144 --num-kernels 10000 --classifier ridge
+python scripts/run_stage2.py --max-length 6144 --num-kernels 10000 --classifier logistic
+python scripts/run_stage2.py --max-length 6144 --num-kernels 10000 --classifier linear_svc
+```
+
 如果机器内存足够，也可以尝试更长的序列：
 
 ```bash
@@ -95,6 +104,25 @@ python scripts/run_stage2.py --max-length 4096 --num-kernels 10000 --n-jobs 1
 - `artifacts/stage2/summary.json`
 - `artifacts/stage2/predictions.csv`
 - `artifacts/stage2/stage2_report.md`
+
+## Stage 3 Run
+
+```bash
+python scripts/run_stage3.py
+```
+
+常用参数：
+
+```bash
+python scripts/run_stage3.py --max-length 6144 --num-kernels 10000 --n-jobs 1
+```
+
+运行结束后会生成：
+
+- `artifacts/stage3/fold_metrics.csv`
+- `artifacts/stage3/summary.json`
+- `artifacts/stage3/predictions.csv`
+- `artifacts/stage3/stage3_report.md`
 
 ## Dataset
 

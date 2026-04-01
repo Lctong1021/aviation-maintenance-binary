@@ -1,0 +1,44 @@
+{
+  "num_flights": 11446,
+  "num_time_series_records": 11446,
+  "num_channels": 23,
+  "header_columns": [
+    "before_after",
+    "date_diff",
+    "flight_length",
+    "label",
+    "hierarchy",
+    "fold",
+    "class",
+    "target_class",
+    "hclass",
+    "number_flights_before"
+  ],
+  "label_counts": {
+    "0": 5844,
+    "1": 5602
+  },
+  "fold_counts": {
+    "0": 2290,
+    "1": 2289,
+    "2": 2289,
+    "3": 2289,
+    "4": 2289
+  },
+  "length_summary": {
+    "count": 11446,
+    "mean": 5517.537742442775,
+    "std": 2211.067550453348,
+    "min": 605,
+    "q25": 4288.25,
+    "median": 5282.5,
+    "q75": 6253.0,
+    "q90": 8472.0,
+    "max": 20679
+  },
+  "preview_master_index": 1,
+  "preview_shape": [
+    4723,
+    23
+  ]
+}

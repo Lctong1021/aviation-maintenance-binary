@@ -1,13 +1,5 @@
-"""
-
-python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier ridge --output-dir artifacts/stage2_2048_ridge
-python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier logistic --output-dir artifacts/stage2_2048_logistic
-python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier linear_svc --output-dir artifacts/stage2_2048_linearsvc
-
-"""
-
-
 from __future__ import annotations
+
 import argparse
 import sys
 from pathlib import Path
@@ -20,26 +12,19 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from maintenance_binary.constants import DEFAULT_DATA_ROOT, PROJECT_ROOT  # noqa: E402
-from maintenance_binary.train_minirocket import run_stage2  # noqa: E402
+from maintenance_binary.train_fusion import run_stage3  # noqa: E402
 
 
-DEFAULT_STAGE2_OUTPUT = PROJECT_ROOT / "artifacts" / "stage2_9000"
+DEFAULT_STAGE3_OUTPUT = PROJECT_ROOT / "artifacts" / "stage3"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run stage 2 MiniRocket model for NGAFID maintenance binary detection.")
+    parser = argparse.ArgumentParser(description="Run stage 3 fusion model for NGAFID maintenance binary detection.")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT, help="Directory for raw benchmark data.")
-    parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGE2_OUTPUT, help="Directory for stage 2 outputs.")
-    parser.add_argument("--max-length", type=int, default=9000, help="Maximum number of timesteps kept for each flight.")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGE3_OUTPUT, help="Directory for stage 3 outputs.")
+    parser.add_argument("--max-length", type=int, default=6144, help="Maximum number of timesteps kept for each flight.")
     parser.add_argument("--num-kernels", type=int, default=10000, help="Number of MiniRocket kernels.")
     parser.add_argument("--n-jobs", type=int, default=-1, help="Number of CPU jobs used by MiniRocket.")
-    parser.add_argument(
-        "--classifier",
-        type=str,
-        default="ridge",
-        choices=["ridge", "logistic", "linear_svc"],
-        help="Classifier head trained on top of MiniRocket features.",
-    )
     parser.add_argument(
         "--folds",
         type=int,
@@ -52,13 +37,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    result = run_stage2(
+    result = run_stage3(
         data_root=args.data_root,
         output_dir=args.output_dir,
         max_length=args.max_length,
         num_kernels=args.num_kernels,
         n_jobs=args.n_jobs,
-        classifier_name=args.classifier,
         folds=args.folds,
     )
 

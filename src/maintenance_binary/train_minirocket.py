@@ -6,9 +6,10 @@ from typing import Dict, List, Sequence
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import RidgeClassifierCV
+from sklearn.linear_model import LogisticRegression, RidgeClassifierCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import LinearSVC
 from sktime.transformations.panel.rocket import MiniRocketMultivariate
 
 from maintenance_binary.constants import RANDOM_SEED
@@ -36,16 +37,44 @@ def build_minirocket_transformer(num_kernels: int, n_jobs: int) -> MiniRocketMul
     )
 
 
-def build_minirocket_classifier() -> Pipeline:
+def build_minirocket_classifier(classifier_name: str) -> Pipeline:
+    if classifier_name == "ridge":
+        classifier = RidgeClassifierCV(alphas=np.logspace(-3, 3, 10), class_weight="balanced")
+    elif classifier_name == "logistic":
+        classifier = LogisticRegression(
+            max_iter=5000,
+            class_weight="balanced",
+            random_state=RANDOM_SEED,
+        )
+    elif classifier_name == "linear_svc":
+        classifier = LinearSVC(
+            C=1.0,
+            class_weight="balanced",
+            dual="auto",
+            random_state=RANDOM_SEED,
+        )
+    else:
+        raise ValueError(f"Unsupported classifier head: {classifier_name}")
+
     return Pipeline(
         steps=[
             ("scaler", StandardScaler(with_mean=False)),
-            (
-                "classifier",
-                RidgeClassifierCV(alphas=np.logspace(-3, 3, 10), class_weight="balanced"),
-            ),
+            ("classifier", classifier),
         ]
     )
+
+
+def get_classifier_scores(classifier: Pipeline, X_test_feat: object) -> np.ndarray:
+    if hasattr(classifier, "decision_function"):
+        return np.asarray(classifier.decision_function(X_test_feat), dtype=np.float32)
+
+    if hasattr(classifier, "predict_proba"):
+        probabilities = classifier.predict_proba(X_test_feat)
+        if probabilities.ndim == 2 and probabilities.shape[1] >= 2:
+            return np.asarray(probabilities[:, 1], dtype=np.float32)
+        return np.asarray(probabilities, dtype=np.float32).reshape(-1)
+
+    raise ValueError("Classifier does not expose decision_function or predict_proba for ROC-AUC scoring.")
 
 
 def run_stage2(
@@ -54,6 +83,7 @@ def run_stage2(
     max_length: int = 4096,
     num_kernels: int = 10000,
     n_jobs: int = 1,
+    classifier_name: str = "ridge",
     folds: Sequence[int] | None = None,
 ) -> Dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -65,7 +95,8 @@ def run_stage2(
         flush=True,
     )
     print(
-        f"[Stage 2] MiniRocket settings: max_length={max_length}, num_kernels={num_kernels}, n_jobs={n_jobs}",
+        "[Stage 2] MiniRocket settings: "
+        f"max_length={max_length}, num_kernels={num_kernels}, n_jobs={n_jobs}, classifier={classifier_name}",
         flush=True,
     )
 
@@ -101,13 +132,13 @@ def run_stage2(
         X_train_feat = transformer.transform(X_train)
         X_test_feat = transformer.transform(X_test)
 
-        print(f"[Fold {fold}] Training ridge classifier on MiniRocket features", flush=True)
-        classifier = build_minirocket_classifier()
+        print(f"[Fold {fold}] Training {classifier_name} classifier on MiniRocket features", flush=True)
+        classifier = build_minirocket_classifier(classifier_name)
         classifier.fit(X_train_feat, y_train)
 
         print(f"[Fold {fold}] Evaluating", flush=True)
         y_pred = classifier.predict(X_test_feat)
-        y_score = classifier.decision_function(X_test_feat)
+        y_score = get_classifier_scores(classifier, X_test_feat)
         metrics = compute_binary_metrics(y_test, y_pred, y_score)
         print(
             f"[Fold {fold}] "
