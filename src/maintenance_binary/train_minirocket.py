@@ -6,10 +6,13 @@ from typing import Dict, List, Sequence
 
 import numpy as np
 import pandas as pd
-from sktime.classification.kernel_based import RocketClassifier
+from sklearn.linear_model import RidgeClassifierCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sktime.transformations.panel.rocket import MiniRocketMultivariate
 
 from maintenance_binary.constants import RANDOM_SEED
-from maintenance_binary.data import load_benchmark_dataset
+from maintenance_binary.data import get_fold_split, load_benchmark_dataset
 from maintenance_binary.metrics import compute_binary_metrics
 from maintenance_binary.reports import build_summary, save_experiment_outputs
 from maintenance_binary.tensor_data import build_sequence_tensor
@@ -25,20 +28,30 @@ class FoldResult:
     roc_auc: float
 
 
-def build_minirocket_classifier(num_kernels: int, n_jobs: int) -> RocketClassifier:
-    return RocketClassifier(
+def build_minirocket_transformer(num_kernels: int, n_jobs: int) -> MiniRocketMultivariate:
+    return MiniRocketMultivariate(
         num_kernels=num_kernels,
-        rocket_transform="minirocket",
-        use_multivariate="auto",
         n_jobs=n_jobs,
         random_state=RANDOM_SEED,
+    )
+
+
+def build_minirocket_classifier() -> Pipeline:
+    return Pipeline(
+        steps=[
+            ("scaler", StandardScaler(with_mean=False)),
+            (
+                "classifier",
+                RidgeClassifierCV(alphas=np.logspace(-3, 3, 10), class_weight="balanced"),
+            ),
+        ]
     )
 
 
 def run_stage2(
     data_root: Path,
     output_dir: Path,
-    max_length: int = 1024,
+    max_length: int = 4096,
     num_kernels: int = 10000,
     n_jobs: int = 1,
     folds: Sequence[int] | None = None,
@@ -55,17 +68,6 @@ def run_stage2(
         f"[Stage 2] MiniRocket settings: max_length={max_length}, num_kernels={num_kernels}, n_jobs={n_jobs}",
         flush=True,
     )
-    print("[Stage 2] Building full sequence tensor once for all flights", flush=True)
-    full_header = bundle.flight_header.sort_index()
-    X_all, y_all, ids_all = build_sequence_tensor(
-        full_header,
-        bundle.flight_arrays,
-        bundle.mins,
-        bundle.maxs,
-        max_length=max_length,
-        desc="All flights to tensors",
-    )
-    fold_values = full_header["fold"].to_numpy(dtype=np.int32)
 
     fold_results: List[FoldResult] = []
     prediction_frames: List[pd.DataFrame] = []
@@ -73,20 +75,40 @@ def run_stage2(
 
     for fold in fold_iterable:
         print(f"\n[Fold {fold}] Preparing split", flush=True)
-        train_mask = fold_values != fold
-        test_mask = fold_values == fold
-        X_train, y_train, train_ids = X_all[train_mask], y_all[train_mask], ids_all[train_mask]
-        X_test, y_test, test_ids = X_all[test_mask], y_all[test_mask], ids_all[test_mask]
-        print(f"[Fold {fold}] Train size: {len(y_train)}, Test size: {len(y_test)}", flush=True)
+        train_df, test_df = get_fold_split(bundle.flight_header, fold)
+        print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
+        X_train, y_train, train_ids = build_sequence_tensor(
+            train_df,
+            bundle.flight_arrays,
+            bundle.mins,
+            bundle.maxs,
+            max_length=max_length,
+            desc=f"Fold {fold} train tensors",
+        )
+        X_test, y_test, test_ids = build_sequence_tensor(
+            test_df,
+            bundle.flight_arrays,
+            bundle.mins,
+            bundle.maxs,
+            max_length=max_length,
+            desc=f"Fold {fold} test tensors",
+        )
 
-        print(f"[Fold {fold}] Training MiniRocket classifier", flush=True)
-        classifier = build_minirocket_classifier(num_kernels=num_kernels, n_jobs=n_jobs)
-        classifier.fit(X_train, y_train)
+        print(f"[Fold {fold}] Fitting MiniRocket transformer", flush=True)
+        transformer = build_minirocket_transformer(num_kernels=num_kernels, n_jobs=n_jobs)
+        transformer.fit(X_train)
+        print(f"[Fold {fold}] Transforming train/test sequences", flush=True)
+        X_train_feat = transformer.transform(X_train)
+        X_test_feat = transformer.transform(X_test)
+
+        print(f"[Fold {fold}] Training ridge classifier on MiniRocket features", flush=True)
+        classifier = build_minirocket_classifier()
+        classifier.fit(X_train_feat, y_train)
 
         print(f"[Fold {fold}] Evaluating", flush=True)
-        y_pred = classifier.predict(X_test)
-        y_prob = classifier.predict_proba(X_test)[:, 1]
-        metrics = compute_binary_metrics(y_test, y_pred, y_prob)
+        y_pred = classifier.predict(X_test_feat)
+        y_score = classifier.decision_function(X_test_feat)
+        metrics = compute_binary_metrics(y_test, y_pred, y_score)
         print(
             f"[Fold {fold}] "
             f"accuracy={metrics['accuracy']:.4f}, "
@@ -103,7 +125,7 @@ def run_stage2(
                     "fold": fold,
                     "y_true": y_test,
                     "y_pred": y_pred,
-                    "y_prob": y_prob,
+                    "y_score": y_score,
                 }
             )
         )

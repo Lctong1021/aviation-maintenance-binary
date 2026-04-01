@@ -23,6 +23,26 @@ artifacts/
 !artifacts/stage2_1024/summary.json
 !artifacts/stage2_1024/predictions.csv
 !artifacts/stage2_1024/stage2_report.md
+!artifacts/stage2_2048/
+!artifacts/stage2_2048/fold_metrics.csv
+!artifacts/stage2_2048/summary.json
+!artifacts/stage2_2048/predictions.csv
+!artifacts/stage2_2048/stage2_report.md
+!artifacts/stage2_4096/
+!artifacts/stage2_4096/fold_metrics.csv
+!artifacts/stage2_4096/summary.json
+!artifacts/stage2_4096/predictions.csv
+!artifacts/stage2_4096/stage2_report.md
+!artifacts/stage2_6144/
+!artifacts/stage2_6144/fold_metrics.csv
+!artifacts/stage2_6144/summary.json
+!artifacts/stage2_6144/predictions.csv
+!artifacts/stage2_6144/stage2_report.md
+!artifacts/stage2_9000/
+!artifacts/stage2_9000/fold_metrics.csv
+!artifacts/stage2_9000/summary.json
+!artifacts/stage2_9000/predictions.csv
+!artifacts/stage2_9000/stage2_report.md
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
@@ -31,3 +51,5 @@ artifacts/
 Prompt记录.docx
 2days/
 2days.tar.gz
+.vscode/
+代码修改.docx
