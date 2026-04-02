@@ -14,3 +14,4 @@ LOCAL_BENCHMARK_DIR = PROJECT_ROOT / BENCHMARK_NAME
 
 MAX_CHANNELS = 23
 RANDOM_SEED = 42
+"""通过设置随机种子，我们可以确保每次运行程序时产生相同的随机数序列，使得实验的结果是可复现的。"""

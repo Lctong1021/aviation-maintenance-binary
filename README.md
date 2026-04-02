@@ -224,4 +224,3 @@ Stage 3 使用 `MiniRocket + statistical features` 融合方案，在 `6144` 长
 
 - 使用数据自带 `fold` 划分
 - 默认随机种子为 `42`
-

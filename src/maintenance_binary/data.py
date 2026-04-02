@@ -68,8 +68,11 @@ def load_benchmark_dataset(data_root: Path) -> BenchmarkDataBundle:
     """加载 benchmark 的元数据、原始时序以及最值统计信息"""
     extract_dir = ensure_benchmark_downloaded(data_root)
 
+    #样本的索引表，记录每趟航班对应的标签信息和划分信息
     header = pd.read_csv(extract_dir / "flight_header.csv", index_col="Master Index")
+    #提供的是各传感器变量的统计范围信息,归一化的依据
     stats = pd.read_csv(extract_dir / "stats.csv")
+    #每一趟航班对应的原始多变量时间序列数据，形状为T * C
     flight_arrays = load(extract_dir / "flight_data.pkl")
 
     maxs = stats.iloc[0, 1 : MAX_CHANNELS + 1].to_numpy(dtype=np.float32)
