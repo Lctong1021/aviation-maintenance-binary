@@ -37,7 +37,7 @@ pip install -r requirements.txt
 ## Dataset
 
 本项目默认下载官方仓库 `hyang0129/NGAFIDDATASET` 中 benchmark 用到的 `2days` 子集。  
-下载链接来自官方实现中的 Google Drive 文件地址。
+
 
 ```
 ./2days/
