@@ -34,11 +34,19 @@ conda activate ngbin
 pip install -r requirements.txt
 ```
 
-如果环境已经创建过，后续只需要：
+## Dataset
 
-```bash
-conda activate ngbin
+本项目默认下载官方仓库 `hyang0129/NGAFIDDATASET` 中 benchmark 用到的 `2days` 子集。  
+下载链接来自官方实现中的 Google Drive 文件地址。
+
+
+./2days/
+├── flight_data.pkl
+├── flight_header.csv
+└── stats.csv
 ```
+
+
 
 ## Dataset Inspection
 
@@ -200,36 +208,7 @@ Stage 3 使用 `MiniRocket + statistical features` 融合方案，在 `6144` 长
 | Stage 2 | MiniRocket (`6144`) + RidgeClassifierCV | `0.7360 ± 0.0092` | `0.7349 ± 0.0067` | `0.8051 ± 0.0109` |
 | Stage 3 | MiniRocket (`6144`) + statistical feature fusion | `0.7251 ± 0.0098` | `0.7221 ± 0.0082` | `0.7943 ± 0.0096` |
 
-## Dataset
 
-本项目默认下载官方仓库 `hyang0129/NGAFIDDATASET` 中 benchmark 用到的 `2days` 子集。  
-下载链接来自官方实现中的 Google Drive 文件地址。
-
-如果项目根目录下已经有：
-
-```text
-./2days/
-├── flight_data.pkl
-├── flight_header.csv
-└── stats.csv
-```
-
-脚本会优先直接使用这份本地数据。
-
-如果 Google Drive 限流导致自动下载失败，可以手工下载后放到：
-
-```text
-data/raw/2days.tar.gz
-```
-
-或者直接解压成：
-
-```text
-data/raw/2days/
-├── flight_data.pkl
-├── flight_header.csv
-└── stats.csv
-```
 
 ## Metrics
 
@@ -243,7 +222,6 @@ data/raw/2days/
 
 ## Notes
 
-- 不硬编码绝对路径
 - 使用数据自带 `fold` 划分
 - 默认随机种子为 `42`
 - 维护标签含义：`before_after = 1` 表示维护前航班，`before_after = 0` 表示维护后航班

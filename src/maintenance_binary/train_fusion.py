@@ -1,3 +1,5 @@
+"""训练并评估 Stage 3 的特征融合模型"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -22,6 +24,8 @@ from maintenance_binary.train_minirocket import build_minirocket_transformer
 
 @dataclass
 class FoldResult:
+    """保存单个融合实验折的评估指标"""
+
     fold: int
     accuracy: float
     f1: float
@@ -31,6 +35,7 @@ class FoldResult:
 
 
 def build_fusion_classifier() -> Pipeline:
+    """构建在统计特征与 MiniRocket 特征拼接后使用的分类器"""
     return Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -49,6 +54,7 @@ def build_fusion_classifier() -> Pipeline:
 
 
 def to_numpy_2d(features: object) -> np.ndarray:
+    """将 transformer 输出统一转换为二维 numpy 数组"""
     if isinstance(features, pd.DataFrame):
         return features.to_numpy(dtype=np.float32)
     if isinstance(features, pd.Series):
@@ -64,6 +70,7 @@ def run_stage3(
     n_jobs: int = 1,
     folds: Sequence[int] | None = None,
 ) -> Dict[str, object]:
+    """执行 Stage 3 特征融合流程的五折交叉验证"""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[Stage 3] Loading dataset from {data_root}", flush=True)

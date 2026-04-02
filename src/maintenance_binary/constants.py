@@ -1,3 +1,5 @@
+"""定义项目中统一使用的路径、benchmark 信息与随机种子"""
+
 from pathlib import Path
 
 

@@ -1,3 +1,5 @@
+"""保存折级指标、汇总结果、预测输出与简要 markdown 报告"""
+
 from __future__ import annotations
 
 import json
@@ -8,6 +10,7 @@ import pandas as pd
 
 
 def build_summary(metrics_df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
+    """将各折指标汇总为均值和标准差"""
     return {
         metric: {
             "mean": float(metrics_df[metric].mean()),
@@ -24,6 +27,7 @@ def write_experiment_report(
     title: str,
     report_filename: str,
 ) -> None:
+    """为某个实验阶段写出简要的 markdown 结果报告"""
     report_lines = [
         f"# {title}",
         "",
@@ -55,6 +59,7 @@ def save_experiment_outputs(
     report_title: str,
     report_filename: str,
 ) -> None:
+    """保存所有实验阶段共用的标准输出文件"""
     output_dir.mkdir(parents=True, exist_ok=True)
     metrics_df.to_csv(output_dir / "fold_metrics.csv", index=False)
     predictions_df.to_csv(output_dir / "predictions.csv", index=False)

@@ -1,14 +1,12 @@
+"""将变长航班时序转换为序列模型可用的定长张量"""
+
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Dict, Tuple
 
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-
-from maintenance_binary.data import BenchmarkDataBundle
-
 
 def pad_or_truncate_flight(
     arr: np.ndarray,
@@ -16,6 +14,7 @@ def pad_or_truncate_flight(
     maxs: np.ndarray,
     max_length: int,
 ) -> np.ndarray:
+    """对单条航班做归一化，并整理成固定 `(通道数, 长度)` 的张量"""
     arr = np.asarray(arr, dtype=np.float32)
     arr = arr[-max_length:, :]
     denom = np.where((maxs - mins) == 0, 1.0, (maxs - mins))
@@ -35,6 +34,7 @@ def build_sequence_tensor(
     max_length: int,
     desc: str | None = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """为某个折的数据构建批量张量、标签和航班编号"""
     n_samples = len(header_df)
     n_channels = mins.shape[0]
     X = np.zeros((n_samples, n_channels, max_length), dtype=np.float32)

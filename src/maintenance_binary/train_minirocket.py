@@ -1,3 +1,5 @@
+"""训练并评估 Stage 2 的 MiniRocket 流程及不同分类头方案"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -21,6 +23,8 @@ from maintenance_binary.tensor_data import build_sequence_tensor
 
 @dataclass
 class FoldResult:
+    """保存单个 MiniRocket 实验折的评估指标"""
+
     fold: int
     accuracy: float
     f1: float
@@ -30,6 +34,7 @@ class FoldResult:
 
 
 def build_minirocket_transformer(num_kernels: int, n_jobs: int) -> MiniRocketMultivariate:
+    """根据给定参数构建 MiniRocket 特征提取器"""
     return MiniRocketMultivariate(
         num_kernels=num_kernels,
         n_jobs=n_jobs,
@@ -38,6 +43,7 @@ def build_minirocket_transformer(num_kernels: int, n_jobs: int) -> MiniRocketMul
 
 
 def build_minirocket_classifier(classifier_name: str) -> Pipeline:
+    """根据名称构建用于 MiniRocket 特征的下游线性分类头"""
     if classifier_name == "ridge":
         classifier = RidgeClassifierCV(alphas=np.logspace(-3, 3, 10), class_weight="balanced")
     elif classifier_name == "logistic":
@@ -65,6 +71,7 @@ def build_minirocket_classifier(classifier_name: str) -> Pipeline:
 
 
 def get_classifier_scores(classifier: Pipeline, X_test_feat: object) -> np.ndarray:
+    """提取连续决策分数，用于计算 ROC-AUC"""
     if hasattr(classifier, "decision_function"):
         return np.asarray(classifier.decision_function(X_test_feat), dtype=np.float32)
 
@@ -86,6 +93,7 @@ def run_stage2(
     classifier_name: str = "ridge",
     folds: Sequence[int] | None = None,
 ) -> Dict[str, object]:
+    """执行 Stage 2 MiniRocket 流程的五折交叉验证"""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[Stage 2] Loading dataset from {data_root}", flush=True)

@@ -1,3 +1,5 @@
+"""计算各实验阶段共用的评估指标"""
+
 from __future__ import annotations
 
 from typing import Dict
@@ -7,6 +9,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 
 def compute_binary_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray) -> Dict[str, float]:
+    """计算一次二分类评估所需的标准指标"""
     metrics = {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "f1": float(f1_score(y_true, y_pred, zero_division=0)),

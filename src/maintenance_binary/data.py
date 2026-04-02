@@ -1,3 +1,5 @@
+"""负责加载 benchmark 子集，并提供统一的折划分访问方式"""
+
 from __future__ import annotations
 
 import tarfile
@@ -16,6 +18,8 @@ from maintenance_binary.constants import BENCHMARK_NAME, BENCHMARK_URL, LOCAL_BE
 
 @dataclass
 class BenchmarkDataBundle:
+    """将原始时序、元数据与归一化统计量统一打包"""
+
     flight_header: pd.DataFrame
     flight_arrays: Dict[int, np.ndarray]
     stats: pd.DataFrame
@@ -24,6 +28,7 @@ class BenchmarkDataBundle:
 
 
 def ensure_benchmark_downloaded(data_root: Path) -> Path:
+    """确保 benchmark 数据可用，必要时执行下载或解压"""
     data_root = Path(data_root)
     data_root.mkdir(parents=True, exist_ok=True)
 
@@ -60,6 +65,7 @@ def ensure_benchmark_downloaded(data_root: Path) -> Path:
 
 
 def load_benchmark_dataset(data_root: Path) -> BenchmarkDataBundle:
+    """加载 benchmark 的元数据、原始时序以及最值统计信息"""
     extract_dir = ensure_benchmark_downloaded(data_root)
 
     header = pd.read_csv(extract_dir / "flight_header.csv", index_col="Master Index")
@@ -79,6 +85,7 @@ def load_benchmark_dataset(data_root: Path) -> BenchmarkDataBundle:
 
 
 def get_fold_split(header_df: pd.DataFrame, fold: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """按照指定 fold 将元数据表拆分为训练集和测试集"""
     test_df = header_df.loc[header_df["fold"] == fold].copy()
     train_df = header_df.loc[header_df["fold"] != fold].copy()
     return train_df, test_df

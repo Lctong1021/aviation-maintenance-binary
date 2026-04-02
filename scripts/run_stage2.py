@@ -1,9 +1,10 @@
-"""
+"""Stage 2 MiniRocket 实验的命令行入口。
+
+示例命令：
 
 python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier ridge --output-dir artifacts/stage2_2048_ridge
 python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier logistic --output-dir artifacts/stage2_2048_logistic
 python scripts/run_stage2.py --max-length 2048 --num-kernels 10000 --classifier linear_svc --output-dir artifacts/stage2_2048_linearsvc
-
 """
 
 
@@ -27,6 +28,7 @@ DEFAULT_STAGE2_OUTPUT = PROJECT_ROOT / "artifacts" / "stage2_9000"
 
 
 def parse_args() -> argparse.Namespace:
+    """解析 Stage 2 实验所需的命令行参数"""
     parser = argparse.ArgumentParser(description="Run stage 2 MiniRocket model for NGAFID maintenance binary detection.")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT, help="Directory for raw benchmark data.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGE2_OUTPUT, help="Directory for stage 2 outputs.")
@@ -51,6 +53,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """执行 Stage 2 流程并输出汇总指标"""
     args = parse_args()
     result = run_stage2(
         data_root=args.data_root,

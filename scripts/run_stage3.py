@@ -1,3 +1,5 @@
+"""Stage 3 特征融合实验的命令行入口"""
+
 from __future__ import annotations
 
 import argparse
@@ -19,6 +21,7 @@ DEFAULT_STAGE3_OUTPUT = PROJECT_ROOT / "artifacts" / "stage3"
 
 
 def parse_args() -> argparse.Namespace:
+    """解析 Stage 3 融合实验所需的命令行参数"""
     parser = argparse.ArgumentParser(description="Run stage 3 fusion model for NGAFID maintenance binary detection.")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT, help="Directory for raw benchmark data.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGE3_OUTPUT, help="Directory for stage 3 outputs.")
@@ -36,6 +39,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """执行 Stage 3 流程并输出最终评估指标"""
     args = parse_args()
     result = run_stage3(
         data_root=args.data_root,

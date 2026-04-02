@@ -1,3 +1,5 @@
+"""训练并评估 Stage 1 的统计特征 baseline"""
+
 from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -18,6 +20,8 @@ from maintenance_binary.reports import build_summary, save_experiment_outputs
 
 @dataclass
 class FoldResult:
+    """保存单个交叉验证折的评估指标"""
+
     fold: int
     accuracy: float
     f1: float
@@ -27,6 +31,7 @@ class FoldResult:
 
 
 def build_baseline_pipeline() -> Pipeline:
+    """构建包含预处理和逻辑回归的 Stage 1 baseline 流水线"""
     return Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -44,6 +49,7 @@ def build_baseline_pipeline() -> Pipeline:
 
 
 def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
+    """执行 Stage 1 的五折交叉验证并保存结果"""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[Stage 1] Loading dataset from {data_root}", flush=True)

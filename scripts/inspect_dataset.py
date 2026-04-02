@@ -1,3 +1,5 @@
+"""用于检查 benchmark 子集，并导出可复用的数据概览文件"""
+
 from __future__ import annotations
 
 import argparse
@@ -23,6 +25,7 @@ DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "artifacts" / "data_overview"
 
 
 def parse_args() -> argparse.Namespace:
+    """解析数据检查脚本所需的命令行参数"""
     parser = argparse.ArgumentParser(description="Inspect the NGAFID 2days benchmark subset and export overview files.")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT, help="Directory for raw benchmark data.")
     parser.add_argument(
@@ -41,6 +44,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_length_summary(lengths: np.ndarray) -> dict[str, float]:
+    """计算航班序列长度的描述性统计信息"""
     return {
         "count": int(lengths.size),
         "mean": float(np.mean(lengths)),
@@ -55,11 +59,13 @@ def build_length_summary(lengths: np.ndarray) -> dict[str, float]:
 
 
 def save_table(df: pd.DataFrame, path: Path) -> None:
+    """将表格保存为 CSV，并在需要时创建父目录"""
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path, index=True)
 
 
 def main() -> None:
+    """加载数据集、生成概览统计，并将结果写入磁盘"""
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
 

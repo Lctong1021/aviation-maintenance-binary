@@ -1,3 +1,5 @@
+"""从变长航班时序中提取手工统计特征"""
+
 from __future__ import annotations
 
 from typing import Dict, List, Tuple
@@ -8,6 +10,7 @@ from tqdm.auto import tqdm
 
 
 def scale_flight(arr: np.ndarray, mins: np.ndarray, maxs: np.ndarray) -> np.ndarray:
+    """对单条航班时序按通道归一化，并安全处理无效值"""
     arr = np.asarray(arr, dtype=np.float32)
     denom = np.where((maxs - mins) == 0, 1.0, (maxs - mins))
     scaled = (arr - mins) / denom
@@ -15,12 +18,14 @@ def scale_flight(arr: np.ndarray, mins: np.ndarray, maxs: np.ndarray) -> np.ndar
 
 
 def _channel_slope(arr: np.ndarray) -> np.ndarray:
+    """使用首尾点近似计算每个通道的整体变化趋势"""
     if arr.shape[0] <= 1:
         return np.zeros(arr.shape[1], dtype=np.float32)
     return (arr[-1] - arr[0]) / float(arr.shape[0] - 1)
 
 
 def extract_flight_features(arr: np.ndarray, mins: np.ndarray, maxs: np.ndarray) -> Dict[str, float]:
+    """将单条多变量航班时序转换为扁平化统计特征字典"""
     arr = scale_flight(arr, mins, maxs)
     arr = np.asarray(arr, dtype=np.float32)
 
@@ -62,6 +67,7 @@ def build_feature_table(
     maxs: np.ndarray,
     desc: str | None = None,
 ) -> Tuple[pd.DataFrame, pd.Series]:
+    """为某个折的数据构建表格特征矩阵及其对应标签"""
     rows: List[Dict[str, float]] = []
     labels: List[int] = []
     indices: List[int] = []
