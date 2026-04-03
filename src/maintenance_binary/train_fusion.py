@@ -84,6 +84,7 @@ def run_stage3(
         flush=True,
     )
 
+    #保存每折结果和预期
     fold_results: List[FoldResult] = []
     prediction_frames: List[pd.DataFrame] = []
     fold_iterable = list(folds) if folds is not None else list(range(5))
@@ -94,6 +95,7 @@ def run_stage3(
         print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
 
         print(f"[Fold {fold}] Building statistical features", flush=True)
+        # 从训练集时序中提取统计特征表
         X_train_stats, y_train = build_feature_table(
             train_df,
             bundle.flight_arrays,
@@ -101,6 +103,7 @@ def run_stage3(
             bundle.maxs,
             desc=f"Fold {fold} train stats",
         )
+        # 从测试集时序中提取统计特征表，并返回标签
         X_test_stats, y_test = build_feature_table(
             test_df,
             bundle.flight_arrays,
@@ -129,14 +132,15 @@ def run_stage3(
 
         print(f"[Fold {fold}] Fitting MiniRocket transformer", flush=True)
         transformer = build_minirocket_transformer(num_kernels=num_kernels, n_jobs=n_jobs)
+        # 只在训练集上拟合，避免数据泄漏
         transformer.fit(X_train_seq)
         print(f"[Fold {fold}] Transforming sequences", flush=True)
         X_train_mr = to_numpy_2d(transformer.transform(X_train_seq))
         X_test_mr = to_numpy_2d(transformer.transform(X_test_seq))
-
+        #按特征列拼接融合
         X_train_all = np.concatenate([X_train_stats.to_numpy(dtype=np.float32), X_train_mr], axis=1)
         X_test_all = np.concatenate([X_test_stats.to_numpy(dtype=np.float32), X_test_mr], axis=1)
-
+        #训练分类器
         print(f"[Fold {fold}] Training fusion classifier", flush=True)
         classifier = build_fusion_classifier()
         classifier.fit(X_train_all, y_train)

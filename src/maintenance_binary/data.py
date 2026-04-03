@@ -13,6 +13,7 @@ import pandas as pd
 from compress_pickle import load
 from gdown.exceptions import FileURLRetrievalError
 
+#配置与逻辑分离
 from maintenance_binary.constants import BENCHMARK_NAME, BENCHMARK_URL, LOCAL_BENCHMARK_DIR, MAX_CHANNELS
 
 

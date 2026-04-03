@@ -116,7 +116,7 @@ def run_stage2(
         print(f"\n[Fold {fold}] Preparing split", flush=True)
         train_df, test_df = get_fold_split(bundle.flight_header, fold)
         print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
-        #构建训练集和测试集
+        # 三维时间张量（样本，通道，时间步长）VS 二维统计特征表，构建训练集和测试集
         X_train, y_train, train_ids = build_sequence_tensor(
             train_df,
             bundle.flight_arrays,
