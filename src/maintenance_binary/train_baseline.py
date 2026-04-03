@@ -50,6 +50,7 @@ def build_baseline_pipeline() -> Pipeline:
 
 def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
     """执行 Stage 1 的五折交叉验证并保存结果"""
+    #创建文件夹
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[Stage 1] Loading dataset from {data_root}", flush=True)
@@ -61,10 +62,12 @@ def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
     fold_results: List[FoldResult] = []
     prediction_frames: List[pd.DataFrame] = []
 
+    #根据五折信息划分
     for fold in range(5):
         print(f"\n[Fold {fold}] Preparing split", flush=True)
         train_df, test_df = get_fold_split(bundle.flight_header, fold)
         print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
+        #构建训练集和测试集
         X_train, y_train = build_feature_table(
             train_df,
             bundle.flight_arrays,
@@ -82,9 +85,11 @@ def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
 
         print(f"[Fold {fold}] Training logistic regression baseline", flush=True)
         pipeline = build_baseline_pipeline()
+        #训练
         pipeline.fit(X_train, y_train)
 
         print(f"[Fold {fold}] Evaluating", flush=True)
+        #测试
         y_pred = pipeline.predict(X_test)
         y_prob = pipeline.predict_proba(X_test)[:, 1]
         metrics = compute_binary_metrics(y_test.to_numpy(), y_pred, y_prob)
@@ -95,7 +100,7 @@ def run_stage1(data_root: Path, output_dir: Path) -> Dict[str, object]:
             f"roc_auc={metrics['roc_auc']:.4f}",
             flush=True,
         )
-
+        #保存结果
         fold_results.append(FoldResult(fold=fold, **metrics))
         prediction_frames.append(
             pd.DataFrame(

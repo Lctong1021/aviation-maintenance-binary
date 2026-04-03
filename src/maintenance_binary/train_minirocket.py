@@ -116,6 +116,7 @@ def run_stage2(
         print(f"\n[Fold {fold}] Preparing split", flush=True)
         train_df, test_df = get_fold_split(bundle.flight_header, fold)
         print(f"[Fold {fold}] Train size: {len(train_df)}, Test size: {len(test_df)}", flush=True)
+        #构建训练集和测试集
         X_train, y_train, train_ids = build_sequence_tensor(
             train_df,
             bundle.flight_arrays,
@@ -135,6 +136,7 @@ def run_stage2(
 
         print(f"[Fold {fold}] Fitting MiniRocket transformer", flush=True)
         transformer = build_minirocket_transformer(num_kernels=num_kernels, n_jobs=n_jobs)
+        #卷积
         transformer.fit(X_train)
         print(f"[Fold {fold}] Transforming train/test sequences", flush=True)
         X_train_feat = transformer.transform(X_train)
@@ -142,6 +144,7 @@ def run_stage2(
 
         print(f"[Fold {fold}] Training {classifier_name} classifier on MiniRocket features", flush=True)
         classifier = build_minirocket_classifier(classifier_name)
+        #分类
         classifier.fit(X_train_feat, y_train)
 
         print(f"[Fold {fold}] Evaluating", flush=True)

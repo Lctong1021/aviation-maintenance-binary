@@ -224,4 +224,4 @@ Stage 3 使用 `MiniRocket + statistical features` 融合方案，在 `6144` 长
 
 - 使用数据自带 `fold` 划分
 - 默认随机种子为 `42`
-- 维护标签含义：`before_after = 1` 表示维护前航班，`before_after = 0` 表示维护后航班
+

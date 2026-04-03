@@ -53,6 +53,8 @@ def extract_flight_features(arr: np.ndarray, mins: np.ndarray, maxs: np.ndarray)
     }
 
     feature_dict: Dict[str, float] = {"flight_length": float(arr.shape[0])}
+
+    #取23个通道的全局特征
     for stat_name, values in stats.items():
         for channel_idx, value in enumerate(values):
             feature_dict[f"ch{channel_idx:02d}_{stat_name}"] = float(value)
@@ -76,6 +78,7 @@ def build_feature_table(
     if desc:
         iterator = tqdm(iterator, total=len(header_df), desc=desc, leave=False)
 
+    #构建训练集数据
     for master_index, row in iterator:
         arr = flight_arrays[int(master_index)]
         feature_row = extract_flight_features(arr, mins=mins, maxs=maxs)
@@ -84,6 +87,7 @@ def build_feature_table(
         labels.append(int(row["before_after"]))
         indices.append(int(master_index))
 
+    #X为统计特征，y是整段flights对应标签
     X = pd.DataFrame(rows).set_index("master_index").sort_index()
     y = pd.Series(labels, index=indices, name="before_after").sort_index()
     return X, y
